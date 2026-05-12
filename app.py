@@ -19,8 +19,6 @@ VERIFY_TOKEN     = os.environ.get("VERIFY_TOKEN", "praticaok2024")
 META_TOKEN       = os.environ.get("META_TOKEN")
 PHONE_NUMBER_ID  = os.environ.get("PHONE_NUMBER_ID")
 
-TELEGRAM_TOKEN       = os.environ.get("TELEGRAM_TOKEN")
-TELEGRAM_CHANNEL_ID  = os.environ.get("TELEGRAM_CHANNEL_ID")
 
 # ─── TESTO INFORMATIVA PRIVACY ────────────────────────────────────────────────
 INFORMATIVA_PRIVACY = """👋 Benvenuto nel sistema di raccolta documenti *PraticaOk*.
@@ -153,33 +151,8 @@ def scarica_file_meta(media_id):
         return None, None, None
 
 
-def salva_file_telegram(file_content, nome_file, content_type, mittente):
+def aggiungi_allegato_airtable(cliente_id, file_content, nome_file, content_type):
     try:
-        caption = f"📎 Da {mittente} — {nome_file}"
-        url_telegram = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendDocument"
-        risposta = req.post(url_telegram, data={
-            "chat_id": TELEGRAM_CHANNEL_ID,
-            "caption": caption
-        }, files={
-            "document": (nome_file, file_content, content_type)
-        })
-        risultato = risposta.json()
-        if risultato.get("ok"):
-            file_id = risultato["result"]["document"]["file_id"]
-            url_info = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getFile?file_id={file_id}"
-            info = req.get(url_info).json()
-            if info.get("ok"):
-                file_path = info["result"]["file_path"]
-                return f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_path}"
-        return None
-    except Exception as e:
-        print(f"Errore Telegram: {e}")
-        return None
-
-
-def aggiungi_allegato_airtable(cliente_id, url_file, nome_file, content_type):
-    try:
-        file_content = req.get(url_file).content
         upload_url = f"https://content.airtable.com/v0/{BASE_ID}/{cliente_id}/Link%20documenti/uploadAttachment"
         headers = {
             "Authorization": f"Bearer {AIRTABLE_TOKEN}",
@@ -318,13 +291,11 @@ def elabora_messaggio(data):
 
         print(f"Tipo: {tipo} | Doc: {doc_trovato} | Stato: {stato_cliente} | Pratica: {tipo_pratica}")
 
-        # Gestisci file
+        # Gestisci file — scarica da Meta e carica direttamente su Airtable
         if ha_file and media_id:
             file_content, nome_file, content_type = scarica_file_meta(media_id)
             if file_content:
-                url_diretto = salva_file_telegram(file_content, nome_file, content_type, mittente)
-                if url_diretto:
-                    aggiungi_allegato_airtable(cliente_id, url_diretto, nome_file, content_type)
+                aggiungi_allegato_airtable(cliente_id, file_content, nome_file, content_type)
 
         # Rispondi
         if tipo == "documento_con_nome":
