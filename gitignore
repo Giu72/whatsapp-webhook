@@ -1,0 +1,19 @@
+# Variabili d'ambiente — MAI caricare su GitHub
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Log
+*.log
