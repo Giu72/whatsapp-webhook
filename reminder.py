@@ -88,7 +88,7 @@ def manda_reminder():
 
 # ─── SCHEDULER ────────────────────────────────────────────────────────────────
 # Pianifica il reminder ogni sera alle 21:00
-schedule.every().day.at("21:00").do(manda_reminder)
+schedule.every().day.at("19:00").do(manda_reminder)
 
 print("Scheduler reminder avviato. In attesa delle 21:00...")
 
