@@ -557,14 +557,26 @@ def cerca_guida_documento(messaggio):
     ha_parola_aiuto = any(parola in msg for parola in PAROLE_AIUTO)
     if not ha_parola_aiuto:
         return None
+
+    # Rimuovi le parole di aiuto dal messaggio per isolare il documento
+    msg_pulito = msg
+    for parola in PAROLE_AIUTO:
+        msg_pulito = msg_pulito.replace(parola, "").strip()
+
+    # Cerca corrispondenza esatta prima
     for doc_key, doc_data in GUIDA_DOCUMENTI.items():
         if doc_key.lower() in msg:
             return doc_data["guida"]
         for sinonimo in doc_data["sinonimi"]:
             if sinonimo.lower() in msg:
                 return doc_data["guida"]
-            if somiglianza(sinonimo, msg) > 0.80:
+
+    # Solo se non trova nulla cerca per somiglianza con soglia alta
+    for doc_key, doc_data in GUIDA_DOCUMENTI.items():
+        for sinonimo in doc_data["sinonimi"]:
+            if somiglianza(sinonimo, msg_pulito) > 0.90:
                 return doc_data["guida"]
+
     return None
 
 
